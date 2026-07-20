@@ -1,723 +1,1357 @@
 <!DOCTYPE html>
-<html>
+<html lang="ms">
 <head>
-  <base target="_top">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PORTAL SIJIL DIGITAL PPDHS</title>
-  <!-- Pustaka Chart.js untuk menjana graf futuristik -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root {
-      --bg-gradient: linear-gradient(135deg, #060814 0%, #0b1120 100%);
-      --panel-bg: rgba(15, 23, 42, 0.85);
-      --neon-blue: #00f0ff;
-      --neon-purple: #bd00ff;
-      --neon-green: #10b981;
-      --neon-amber: #f59e0b;
-      --neon-red: #ff0055;
-      --text-main: #f8fafc;
-      --border-glow: rgba(0, 240, 255, 0.15);
-    }
-    
-    body {
-      font-family: 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg-gradient);
-      color: var(--text-main);
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misi Penjelajah Angkasa Matematik</title>
+    <style>
+        /* --- GAYA TEMA & ANIMASI LATAR BELAKANG --- */
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --success: #00b894;
+            --danger: #d63031;
+            --warning: #fdcb6e;
+            --accent: #e84393;
+            --dark: #2d3436;
+            --light: #dfe6e9;
+        }
 
-    .header-portal {
-      text-align: center;
-      padding: 35px 20px 25px 20px;
-      background: rgba(6, 8, 20, 0.9);
-      border-bottom: 2px solid var(--neon-blue);
-      box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
-      backdrop-filter: blur(15px);
-    }
-    
-    .header-portal h1 {
-      margin: 0;
-      font-size: 32px;
-      font-weight: 900;
-      letter-spacing: 2px;
-      background: linear-gradient(to right, var(--neon-blue), var(--neon-purple));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    
-    .header-portal h2 {
-      margin: 8px 0 20px 0;
-      font-size: 14px;
-      color: #94a3b8;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Ubuntu', sans-serif;
+            user-select: none;
+        }
 
-    .nav-portal {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    
-    .btn-nav {
-      padding: 10px 24px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #ffffff;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.3s;
-      letter-spacing: 1px;
-    }
-    
-    .btn-nav.active {
-      background: transparent;
-      color: var(--neon-blue);
-      border: 1px solid var(--neon-blue);
-      box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
-    }
+        body {
+            background: linear-gradient(135deg, #0f0c1b, #201a30, #2c1b4d);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-    .page-wrapper {
-      padding: 30px 20px 80px 20px;
-      max-width: 1100px;
-      margin: 0 auto;
-      width: 100%;
-      box-sizing: border-box;
-      flex: 1;
-    }
-    
-    .page-content { display: none; }
-    .page-content.active { display: block; }
+        /* Animasi Elemen Angkasa */
+        .space-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
 
-    .panel-futuristic {
-      background: var(--panel-bg);
-      border: 1px solid var(--border-glow);
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-    }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: blink 2s infinite alternate;
+        }
 
-    .alert-box {
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid var(--neon-amber);
-      color: #fef08a;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 25px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .alert-icon { font-size: 20px; }
+        @keyframes blink {
+            0% { opacity: 0.2; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
 
-    .scorecard-container {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-    @media (max-width: 768px) { .scorecard-container { grid-template-columns: 1fr; } }
-    
-    .scorecard {
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 10px;
-      padding: 20px;
-      text-align: center;
-    }
-    .scorecard h4 { margin: 0 0 10px 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-    .scorecard .val { font-size: 32px; font-weight: 800; color: #ffffff; }
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            animation: float-planet 20s infinite linear;
+            opacity: 0.6;
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.6), 0 0 20px rgba(255,255,255,0.2);
+        }
 
-    .dash-filters {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
-      background: rgba(7, 10, 19, 0.4);
-      padding: 15px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.05);
-      justify-content: center;
-    }
-    .dash-filters select { max-width: 300px; flex: 1; min-width: 200px; background: #070a13; border: 1px solid rgba(255,255,255,0.15); color: white; padding: 10px; border-radius: 6px; }
+        @keyframes float-planet {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+            100% { transform: translateY(0) rotate(360deg); }
+        }
 
-    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
-    @media (max-width: 850px) { .charts-grid { grid-template-columns: 1fr; } }
-    .chart-card { background: rgba(7, 10, 19, 0.3); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 8px; text-align: center; }
+        .rocket-float {
+            position: absolute;
+            font-size: 3rem;
+            bottom: 10%;
+            left: 5%;
+            animation: float-rocket 6s infinite ease-in-out;
+            z-index: 0;
+        }
 
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 700px) { .form-grid { grid-template-columns: 1fr; } }
-    .form-group { display: flex; flex-direction: column; }
-    .form-group.full-width { grid-column: span 2; }
-    
-    label { margin-bottom: 8px; font-weight: 700; color: var(--neon-blue); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
-    input, select { background: rgba(7, 10, 19, 0.7); border: 1px solid rgba(255, 255, 255, 0.15); padding: 12px; border-radius: 6px; color: white; font-size: 14px; }
-    input:focus, select:focus { outline: none; border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 240, 255, 0.4); }
-    select option { background: #0f172a; color: white; }
-    
-    .btn-submit { width: 100%; padding: 15px; background: linear-gradient(to right, var(--neon-blue), var(--neon-purple)); color: white; border: none; border-radius: 6px; font-weight: 800; font-size: 15px; cursor: pointer; margin-top: 15px; }
-    .btn-submit:disabled { background: #334155; box-shadow: none; cursor: not-allowed; }
+        @keyframes float-rocket {
+            0% { transform: translateY(0) rotate(15deg); }
+            50% { transform: translateY(-30px) rotate(25deg); }
+            100% { transform: translateY(0) rotate(15deg); }
+        }
 
-    .table-responsive { overflow-x: auto; margin-top: 15px; }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th { background: rgba(0, 240, 255, 0.08); color: var(--neon-blue); padding: 14px; font-size: 13px; border-bottom: 2px solid var(--neon-blue); }
-    td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
-    tr:hover { background: rgba(0, 240, 255, 0.02); }
+        /* --- KONTENA UTAMA & SKRIN --- */
+        .game-container {
+            width: 95%;
+            max-width: 800px;
+            background: rgba(25, 20, 40, 0.85);
+            border: 4px solid var(--primary);
+            border-radius: 30px;
+            padding: 25px;
+            box-shadow: 0 0 30px rgba(108, 92, 231, 0.5), inset 0 0 20px rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            position: relative;
+        }
 
-    .btn-delete {
-      background: rgba(255, 0, 85, 0.1);
-      border: 1px solid var(--neon-red);
-      color: #ffa6c9;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-delete:hover {
-      background: var(--neon-red);
-      color: white;
-      box-shadow: 0 0 10px rgba(255, 0, 85, 0.6);
-    }
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
 
-    .pagination-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
-    .btn-page { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
-    .btn-page:disabled { opacity: 0.2; cursor: not-allowed; }
-    #status { margin-top: 20px; padding: 12px; border-radius: 6px; text-align: center; display: none; font-weight: 600; }
-    .loading { background: rgba(234, 179, 8, 0.15); color: #fef08a; border: 1px solid #fef08a; }
-    .success { background: rgba(34, 197, 94, 0.15); color: #bbf7d0; border: 1px solid #bbf7d0; }
+        .screen.active {
+            display: block;
+        }
 
-    .footer-copyright {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      padding: 15px 30px;
-      font-size: 12px;
-      color: #64748b;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      background: transparent;
-      z-index: 999;
-    }
-  </style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* --- MENU UTAMA --- */
+        .title-container {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .title-container h1 {
+            font-size: 2.5rem;
+            color: var(--warning);
+            text-shadow: 3px 3px 0px #c0392b, 0 0 20px rgba(253, 203, 110, 0.6);
+            margin-bottom: 5px;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .setup-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--light);
+            font-size: 1.1rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 15px;
+            border: 3px solid var(--secondary);
+            background: rgba(0,0,0,0.4);
+            color: white;
+            font-size: 1.1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--warning);
+            box-shadow: 0 0 10px rgba(253, 203, 110, 0.5);
+        }
+
+        /* Pilihan Avatar */
+        .avatar-selection {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+
+        .avatar-option {
+            font-size: 2.5rem;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 15px;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .avatar-option.selected {
+            border-color: var(--warning);
+            background: rgba(253, 203, 110, 0.2);
+            transform: scale(1.2);
+        }
+
+        /* Butang Awam */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 5px 0px rgba(0,0,0,0.3);
+            margin: 5px;
+            text-decoration: none;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0px rgba(0,0,0,0.3);
+        }
+
+        .btn-primary { background: linear-gradient(to bottom, var(--primary), #4834d4); }
+        .btn-success { background: linear-gradient(to bottom, var(--success), #009432); }
+        .btn-warning { background: linear-gradient(to bottom, var(--warning), #f39c12); color: #2d3436; }
+        .btn-danger { background: linear-gradient(to bottom, var(--danger), #c0392b); }
+        
+        .btn-block { width: 100%; display: flex; margin: 10px 0; padding: 15px; }
+
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        /* --- DASHBOARD PERMAINAN (ATAS) --- */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px;
+            border-radius: 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .dash-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.05);
+            padding: 6px 10px;
+            border-radius: 10px;
+        }
+
+        .dash-item.important {
+            border: 1px solid var(--warning);
+        }
+
+        /* --- KAWASAN SOALAN & JAWAPAN --- */
+        .level-banner {
+            text-align: center;
+            font-size: 1.3rem;
+            color: var(--warning);
+            font-weight: bold;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .progress-container {
+            background: rgba(255,255,255,0.1);
+            height: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, var(--success), #55efc4);
+            transition: width 0.3s ease;
+        }
+
+        .timer-container {
+            background: rgba(255,255,255,0.1);
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .timer-bar {
+            height: 100%;
+            width: 100%;
+            background: var(--warning);
+            transition: width 0.1s linear;
+        }
+
+        .question-card {
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.2), rgba(232, 67, 147, 0.2));
+            border: 3px solid var(--secondary);
+            border-radius: 25px;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .question-text {
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 3px solid var(--primary);
+            color: white;
+            font-size: 1.8rem;
+            padding: 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+            box-shadow: 0 6px 0 var(--primary);
+        }
+
+        .option-btn:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .option-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 var(--primary);
+        }
+
+        /* Tindak balas Jawapan */
+        .option-btn.correct {
+            background: var(--success) !important;
+            border-color: #55efc4 !important;
+            box-shadow: 0 4px 0 #009432 !important;
+            animation: bounce 0.5s ease;
+        }
+
+        .option-btn.wrong {
+            background: var(--danger) !important;
+            border-color: #ff7675 !important;
+            box-shadow: 0 4px 0 #c0392b !important;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .feedback-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            border-radius: 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 5;
+        }
+
+        .feedback-overlay.active {
+            opacity: 1;
+        }
+
+        .feedback-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* --- SKRIN TRANSISI TAHAP & TAMAT --- */
+        .status-title {
+            font-size: 2.5rem;
+            color: var(--warning);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stats-list {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 1.1rem;
+        }
+
+        .stats-row:last-child {
+            border: none;
+        }
+
+        .badge-box {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            border: 2px dashed var(--warning);
+        }
+
+        .badge-icon {
+            font-size: 4rem;
+            animation: floating 3s infinite ease-in-out;
+            display: inline-block;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Papan Skor */
+        .leaderboard-box {
+            margin-top: 20px;
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 15px;
+        }
+
+        .leaderboard-title {
+            text-align: center;
+            color: var(--secondary);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.02);
+            margin-bottom: 4px;
+            border-radius: 5px;
+        }
+
+        /* --- REKABENTUK SIJIL DIGITAL --- */
+        .certificate-wrapper {
+            background: white;
+            color: #2d3436;
+            padding: 30px;
+            border-radius: 20px;
+            border: 10px double var(--primary);
+            text-align: center;
+            position: relative;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .cert-border-decor {
+            position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border: 2px solid var(--secondary);
+            pointer-events: none;
+        }
+
+        .certificate-wrapper h2 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .cert-name {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #d63031;
+            text-decoration: underline;
+            margin: 15px 0;
+        }
+
+        .cert-school {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* Modals / Arahan Papan */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #2c1b4d;
+            border: 4px solid var(--warning);
+            border-radius: 25px;
+            padding: 25px;
+            max-width: 500px;
+            width: 100%;
+            color: white;
+        }
+
+        /* Canvas Bunga Api / Confetti */
+        #canvas-fx {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 99;
+        }
+
+        /* --- RESPONSIVE MEDIA --- */
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .title-container h1 { font-size: 1.8rem; }
+            .question-text { font-size: 2.2rem; }
+            .dashboard { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* Elemen Cetakan Sijil */
+        @media print {
+            body * { visibility: hidden; }
+            .certificate-wrapper, .certificate-wrapper * { visibility: visible; }
+            .certificate-wrapper { position: absolute; left: 0; top: 0; width: 100%; border: 5px solid black; }
+        }
+    </style>
 </head>
 <body>
 
-  <!-- CONTAINER HEADER PORTAL -->
-  <div class="header-portal">
-    <h1>PORTAL SIJIL DIGITAL</h1>
-    <h2>Pejabat Pendidikan Daerah Hulu Selangor</h2>
-    
-    <div class="nav-portal">
-      <button class="btn-nav active" onclick="muatDashboardAwan('pageDashboard', this)">DASHBOARD</button>
-      <button class="btn-nav" onclick="tukarPage('pageDaftar', this)">DAFTAR KEHADIRAN</button>
-      <button class="btn-nav" onclick="muatSenaraiSijil('pageSenarai', this)">SENARAI SIJIL</button>
-    </div>
-  </div>
-
-  <div class="page-wrapper">
-    
-    <!-- PAGE 1: DASHBOARD -->
-    <div id="pageDashboard" class="page-content active">
-      <div class="panel-futuristic">
-        <div class="dash-filters">
-          <select id="dashFilTahun" onchange="prosesAnalisisVisual()">
-            <option value="">-- Semua Tahun --</option>
-            <option value="2026">2026</option>
-            <option value="2025">2025</option>
-          </select>
-          <select id="dashFilJenis" onchange="prosesAnalisisVisual()">
-            <option value="">-- Semua Jenis Sijil --</option>
-            <option value="PESERTA">Sijil Penyertaan</option>
-            <option value="PENCERAMAH">Sijil Penghargaan</option>
-          </select>
-        </div>
-
-        <div class="scorecard-container">
-          <div class="scorecard" style="border-top: 3px solid var(--neon-blue);">
-            <h4>Jumlah Sijil Dikeluarkan</h4>
-            <div class="val" id="cardTotal">0</div>
-          </div>
-          <div class="scorecard" style="border-top: 3px solid var(--neon-green);">
-            <h4>Bilangan Sijil Penyertaan</h4>
-            <div class="val" id="cardPeserta">0</div>
-          </div>
-          <div class="scorecard" style="border-top: 3px solid var(--neon-purple);">
-            <h4>Bilangan Sijil Penghargaan</h4>
-            <div class="val" id="cardPenceramah">0</div>
-          </div>
-        </div>
-
-        <div id="loadingDash" style="text-align:center; color:#64748b; padding:20px;">Mengira analitik awan...</div>
-
-        <div class="charts-grid" id="chartsArea" style="display:none;">
-          <div class="chart-card">
-            <h5 style="margin:0 0 15px 0; color:var(--neon-blue);">BILANGAN SIJIL DIKELUARKAN MENGIKUT TAHUN</h5>
-            <canvas id="chartTahun"></canvas>
-          </div>
-          <div class="chart-card">
-            <h5 style="margin:0 0 15px 0; color:var(--neon-purple);">BILANGAN SIJIL MENGIKUT SEKTOR ANJURAN</h5>
-            <canvas id="chartSektor"></canvas>
-          </div>
-        </div>
-      </div>
+    <!-- Latar Belakang Angkasa Lepas -->
+    <div class="space-bg" id="space-bg">
+        <div class="rocket-float">🚀</div>
     </div>
 
-    <!-- PAGE 2: DAFTAR KEHADIRAN (MENGANDUNGI TARIKH MULA & TARIKH AKHIR) -->
-    <div id="pageDaftar" class="page-content">
-      <div class="panel-futuristic">
-        <div class="alert-box">
-          <span class="alert-icon">⚠️</span>
-          <span><strong>PERINGATAN:</strong> Pastikan Nama Program ditulis dengan betul kerana kesalahan akan menjejaskan sijil anda.</span>
+    <!-- Kanvas Efekt Animasi Global (Confetti / Bunga Api) -->
+    <canvas id="canvas-fx"></canvas>
+
+    <!-- KONTENA UTAMA PERMAINAN -->
+    <div class="game-container">
+        
+        <!-- ================= PANDANGAN 1: UTAMA / PENDAFTARAN ================= -->
+        <div id="screen-welcome" class="screen active">
+            <div class="title-container">
+                <h1>🚀 MISI PENJELAJAH ANGKASA MATEMATIK</h1>
+                <p class="subtitle">Belajar Matematik Sambil Bermain</p>
+            </div>
+
+            <div class="setup-box">
+                <div class="input-group">
+                    <label>👦 Nama Penjelajah Muda:</label>
+                    <input type="text" id="input-name" placeholder="Masukkan nama anda..." value="Ali">
+                </div>
+                <div class="input-group">
+                    <label>🏫 Nama Sekolah:</label>
+                    <input type="text" id="input-school" placeholder="Masukkan nama sekolah..." value="SK Angkasa">
+                </div>
+                <label style="font-weight: bold; color: var(--light);">🛸 Pilih Avatar Anda:</label>
+                <div class="avatar-selection">
+                    <div class="avatar-option selected" onclick="selectAvatar('👨‍🚀', this)">👨‍🚀</div>
+                    <div class="avatar-option" onclick="selectAvatar('👩‍🚀', this)">👩‍🚀</div>
+                    <div class="avatar-option" onclick="selectAvatar('👽', this)">👽</div>
+                    <div class="avatar-option" onclick="selectAvatar('🤖', this)">🤖</div>
+                </div>
+            </div>
+
+            <button class="btn btn-warning btn-block" onclick="startGame()">▶️ MULA PERMAINAN</button>
+
+            <div class="control-panel">
+                <button class="btn btn-primary" onclick="toggleMute()">🎵 Muzik: <span id="audio-status">Buka</span></button>
+                <button class="btn btn-primary" onclick="showHowToPlay()">❓ Cara Bermain</button>
+                <button class="btn btn-primary" onclick="toggleFullScreen()">📺 Skrin Penuh</button>
+            </div>
+
+            <!-- Rekod Tertinggi -->
+            <div class="leaderboard-box">
+                <div class="leaderboard-title">🏆 Markah Tertinggi Galaksi</div>
+                <div id="high-score-board">Tiada rekod lagi. Jadilah yang pertama!</div>
+            </div>
         </div>
 
-        <form id="attendanceForm" onsubmit="hantarBorang(event)">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Nama Penuh:</label>
-              <input type="text" id="nama" required placeholder="NAMA GURU (HURUF BESAR)">
+        <!-- ================= PANDANGAN 2: PERMAINAN AKTIF ================= -->
+        <div id="screen-game" class="screen">
+            <!-- Dashboard Info Atas -->
+            <div class="dashboard">
+                <div class="dash-item"><span id="dash-avatar">👨‍🚀</span> <strong id="dash-name">Pemain</strong></div>
+                <div class="dash-item" style="font-size:0.8rem; overflow:hidden;"><span id="dash-school">Sekolah</span></div>
+                <div class="dash-item important">⭐ Skor: <span id="dash-score">0</span></div>
+                <div class="dash-item">❤️ Nyawa: <span id="dash-lives">❤️❤️❤️</span></div>
+                <div class="dash-item">🎖 Tahap: <span id="dash-level">1</span></div>
+                <div class="dash-item">⏰ Masa: <span id="dash-time">0</span>s</div>
             </div>
-            <div class="form-group">
-              <label>No. Kad Pengenalan:</label>
-              <input type="text" id="ic" required maxlength="12" pattern="\d{12}" placeholder="Contoh: 850312105121">
-            </div>
-            <div class="form-group full-width">
-              <label>Nama Institusi:</label>
-              <select id="institusi" required>
-                <option value="">-- Pilih Institusi / Sekolah Anda --</option>
-                <option value="PPD HULU SELANGOR">PPD HULU SELANGOR</option>
-                <option value="SK BATANG KALI">SK BATANG KALI</option>
-                <option value="SK RASA">SK RASA</option>
-                <option value="SK SG CHOH">SK SG CHOH</option>
-                <option value="SK SG SELISEK">SK SG SELISEK</option>
-                <option value="SK ULU YAM BHARU">SK ULU YAM BHARU</option>
-                <option value="SK ULU YAM LAMA">SK ULU YAM LAMA</option>
-                <option value="SK HULU BERNAM">SK HULU BERNAM</option>
-                <option value="SK KUALA KUBU BHARU">SK KUALA KUBU BHARU</option>
-                <option value="SK KERLING">SK KERLING</option>
-                <option value="SK KALUMPANG">SK KALUMPANG</option>
-                <option value="SK KG KUANTAN">SK KG KUANTAN</option>
-                <option value="SK GEDANGSA">SK GEDANGSA</option>
-                <option value="SK SUNGAI BUAYA">SK SUNGAI BUAYA</option>
-                <option value="SK KAMPUNG SOEHARTO">SK KAMPUNG SOEHARTO</option>
-                <option value="SK TUN ABDUL RAZAK">SK TUN ABDUL RAZAK</option>
-                <option value="SK GESIR TENGAH">SK GESIR TENGAH</option>
-                <option value="SK SG TENGI">SK SG TENGI</option>
-                <option value="SK SRI KELEDANG">SK SRI KELEDANG</option>
-                <option value="SK SERENDAH">SK SERENDAH</option>
-                <option value="SK BUKIT BERUNTUNG">SK BUKIT BERUNTUNG</option>
-                <option value="SK AMPANG PECAH">SK AMPANG PECAH</option>
-                <option value="SK BANDAR BARU BATANG KALI">SK BANDAR BARU BATANG KALI</option>
-                <option value="SK BANDAR SUNGAI BUAYA">SK BANDAR SUNGAI BUAYA</option>
-                <option value="SK SERI FAJAR">SK SERI FAJAR</option>
-                <option value="SK TAMAN BUNGA RAYA (1)">SK TAMAN BUNGA RAYA (1)</option>
-                <option value="SK LEMBAH BERINGIN">SK LEMBAH BERINGIN</option>
-                <option value="SK BUKIT SENTOSA">SK BUKIT SENTOSA</option>
-                <option value="SK ANTARA GAPI">SK ANTARA GAPI</option>
-                <option value="SK BUKIT BERUNTUNG 2">SK BUKIT BERUNTUNG 2</option>
-                <option value="SK TAMAN BUNGA RAYA 2">SK TAMAN BUNGA RAYA 2</option>
-                <option value="SK KUALA KUBU BARU SATU">SK KUALA KUBU BARU SATU</option>
-                <option value="SK KUALA KUBU BHARU DUA">SK KUALA KUBU BHARU DUA</option>
-                <option value="SJKC BATANG KALI">SJKC BATANG KALI</option>
-                <option value="SJKC BKT TANGGA">SJKC BKT TANGGA</option>
-                <option value="SJKC CHOONG CHEE">SJKC CHOONG CHEE</option>
-                <option value="SJKC KALUMPANG">SJKC KALUMPANG</option>
-                <option value="SJKC KAMPUNG GURNEY">SJKC KAMPUNG GURNEY</option>
-                <option value="SJKC KERLING">SJKC KERLING</option>
-                <option value="SJKC KHING MING">SJKC KHING MING</option>
-                <option value="SJKC RASA">SJKC RASA</option>
-                <option value="SJKC SERENDAH">SJKC SERENDAH</option>
-                <option value="SJKT LADANG BATANG KALI">SJKT LADANG BATANG KALI</option>
-                <option value="SJKT LDG CHANGKAT ASA">SJKT LDG CHANGKAT ASA</option>
-                <option value="SJKT LDG ESCOT">SJKT LDG ESCOT</option>
-                <option value="SJKT KUALA KUBU BHARU">SJKT KUALA KUBU BHARU</option>
-                <option value="SJKT LADANG KERLING">SJKT LADANG KERLING</option>
-                <option value="SJKT LADANG KALUMPANG">SJKT LADANG KALUMPANG</option>
-                <option value="SJKT LDG LIMA BELAS">SJKT LDG LIMA BELAS</option>
-                <option value="SJKT LDG SG CHOH">SJKT LDG SG CHOH</option>
-                <option value="SJKT BUKIT BERUNTUNG">SJKT BUKIT BERUNTUNG</option>
-                <option value="SMK KUALA KUBU BHARU">SMK KUALA KUBU BHARU</option>
-                <option value="SMK KAMPONG SOEHARTO">SMK KAMPONG SOEHARTO</option>
-                <option value="SMK SUNGAI CHOH">SMK SUNGAI CHOH</option>
-                <option value="SMK KALUMPANG">SMK KALUMPANG</option>
-                <option value="SMK GEDANGSA">SMK GEDANGSA</option>
-                <option value="SMK BUKIT SENTOSA">SMK BUKIT SENTOSA</option>
-                <option value="SM SAINS HULU SELANGOR">SM SAINS HULU SELANGOR</option>
-                <option value="SMK AMPANG PECAH">SMK AMPANG PECAH</option>
-                <option value="SMK BANDAR BARU BATANG KALI">SMK BANDAR BARU BATANG KALI</option>
-                <option value="SMK BANDAR SUNGAI BUAYA">SMK BANDAR SUNGAI BUAYA</option>
-                <option value="SMK TAMAN BUNGA RAYA (1)">SMK TAMAN BUNGA RAYA (1)</option>
-                <option value="SMK SERENDAH">SMK SERENDAH</option>
-                <option value="SMK BUKIT SENTOSA 2">SMK BUKIT SENTOSA 2</option>
-                <option value="SMK SYED MASHOR">SMK SYED MASHOR</option>
-                <option value="SMK DATO' HJ KAMARUDDIN">SMK DATO' HJ KAMARUDDIN</option>
-                <option value="SAM SUNGAI SELISEK">SAM SUNGAI SELISEK</option>
-                <option value="SAMT KUALA KUBU BHARU">SAMT KUALA KUBU BHARU</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Nama Program:</label>
-              <input type="text" id="program" required placeholder="Taip Nama Program Dengan Betul">
-            </div>
-            <div class="form-group">
-              <label>Penyertaan (Jenis Sijil):</label>
-              <select id="penyertaan" required>
-                <option value="">-- Pilih Penyertaan --</option>
-                <option value="PESERTA">PESERTA</option>
-                <option value="PENCERAMAH">PENCERAMAH</option>
-              </select>
-            </div>
-            <div class="form-group full-width">
-              <label>Anjuran Sektor:</label>
-              <select id="anjuran" required>
-                <option value="">-- Pilih Sektor Anjuran --</option>
-                <option value="SEKTOR PEMBELAJARAN">SEKTOR PEMBELAJARAN</option>
-                <option value="SEKTOR PERANCANGAN">SEKTOR PERANCANGAN</option>
-                <option value="SEKTOR PEMBANGUNAN MURID">SEKTOR PEMBANGUNAN MURID</option>
-                <option value="SEKTOR PENGURUSAN SEKOLAH">SEKTOR PENGURUSAN SEKOLAH</option>
-                <option value="SEKTOR PENGURUSAN">SEKTOR PENGURUSANn</option>
-                <option value="SEKTOR PEPERIKSAAN DAN PENTAKSIRAN">SEKTOR PEPERIKSAAN DAN PENTAKSIRAN</option>
-              </select>
-            </div>
+
+            <div class="level-banner" id="level-title">TAHAP 1: OPERASI ASAS HINGGA 20</div>
             
-            <!-- RUANGAN DUA INPUT TARIKH (MULA & AKHIR) -->
-            <div class="form-group">
-              <label>Tarikh Mula Program:</label>
-              <input type="date" id="tarikhMula" required>
+            <!-- Kemajuan Soalan -->
+            <div class="progress-container">
+                <div class="progress-bar" id="game-progress"></div>
             </div>
-            <div class="form-group">
-              <label>Tarikh Akhir Program:</label>
-              <input type="date" id="tarikhAkhir" required>
+
+            <!-- Kaunter Masa Had Soalan -->
+            <div class="timer-container">
+                <div class="timer-bar" id="question-timer"></div>
             </div>
+
+            <!-- Kad Soalan UTAMA -->
+            <div class="question-card">
+                <div class="question-text" id="question-display">12 + 5 = ?</div>
+                
+                <!-- Lapisan Maklumbalas Jawapan Salah -->
+                <div class="feedback-overlay" id="feedback-layer">
+                    <div class="feedback-title" id="feedback-msg" style="color:var(--danger)">❌ OOPS, SALAH!</div>
+                    <div style="font-size:1.2rem;" id="feedback-sub">Jawapan betul ialah: <strong id="correct-ans-show">0</strong></div>
+                </div>
+            </div>
+
+            <!-- Pilihan Jawapan -->
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer(this, 0)">A</button>
+                <button class="option-btn" onclick="checkAnswer(this, 1)">B</button>
+                <button class="option-btn" onclick="checkAnswer(this, 2)">C</button>
+                <button class="option-btn" onclick="checkAnswer(this, 3)">D</button>
+            </div>
+
+            <div class="control-panel">
+                <button class="btn btn-danger" onclick="quitGame()">🚪 Keluar</button>
+            </div>
+        </div>
+
+        <!-- ================= PANDANGAN 3: TRANSISI TAHAP ================= -->
+        <div id="screen-transition" class="screen">
+            <h2 class="status-title">🏆 TAHNIAH!</h2>
+            <div style="text-align: center; font-size: 1.5rem; margin-bottom: 20px;" id="trans-msg">
+                Anda berjaya melepasi Tahap 1!
+            </div>
+            <div class="badge-box">
+                <div class="badge-icon">⭐</div>
+                <p style="margin-top:10px; font-weight:bold; color:var(--warning);">Sistem Kuasa Roket Dipertingkatkan!</p>
+            </div>
+            <button class="btn btn-success btn-block" onclick="nextLevel()">🚀 TERUSKAN KE TAHAP SETERUSNYA</button>
+        </div>
+
+        <!-- ================= PANDANGAN 4: TAMAT PERMAINAN / KEPUTUSAN ================= -->
+        <div id="screen-gameover" class="screen">
+            <h2 class="status-title" id="gameover-title">🎉 MISI SELESAI!</h2>
             
-            <div class="form-group full-width">
-              <label>Lokasi:</label>
-              <input type="text" id="lokasi" required placeholder="Contoh: Auditorium PPD Hulu Selangor">
+            <div class="stats-list">
+                <div class="stats-row"><span>👦 Penjelajah:</span><strong id="res-name">Ali</strong></div>
+                <div class="stats-row"><span>🏫 Sekolah:</span><strong id="res-school">SK Angkasa</strong></div>
+                <div class="stats-row"><span>⭐ Jumlah Markah:</span><strong id="res-score" style="color:var(--warning)">0</strong></div>
+                <div class="stats-row"><span>✅ Jawapan Betul:</span><strong id="res-correct" style="color:var(--success)">0</strong></div>
+                <div class="stats-row"><span>❌ Jawapan Salah:</span><strong id="res-wrong" style="color:var(--danger)">0</strong></div>
+                <div class="stats-row"><span>⏰ Masa Keseluruhan:</span><strong id="res-totaltime">0 saat</strong></div>
+                <div class="stats-row"><span>🏅 Lencana Diperoleh:</span><strong id="res-badge">Tiada</strong></div>
+                <div class="stats-row" style="font-size: 1.5rem; font-weight: bold; border:none; padding-top: 15px;">
+                    <span>📊 Gred Pencapaian:</span><span id="res-grade" style="color:var(--warning)">A+</span>
+                </div>
             </div>
-            <div class="form-group full-width">
-              <label>Alamat Emel Penerima:</label>
-              <input type="email" id="emel" required placeholder="user@moe-dl.edu.my">
+
+            <!-- Kawasan Paparan Sijil Digital -->
+            <div class="certificate-wrapper" id="certificate">
+                <div class="cert-border-decor"></div>
+                <h2>🏆 SIJIL PENJELAJAH MATEMATIK GALAKSI 🏆</h2>
+                <p>Dengan ini diperakui bahawa penjelajah berani</p>
+                <div class="cert-name" id="cert-p-name">NAMA MURID</div>
+                <p>dari sekolah</p>
+                <div class="cert-school" id="cert-p-school">NAMA SEKOLAH</div>
+                <p>telah berjaya menamatkan Misi Penjelajah Angkasa Matematik dengan markah cemerlang</p>
+                <h3 style="margin: 10px 0; font-size: 1.6rem; color: #6c5ce7;">Skor: <span id="cert-p-score">0</span></h3>
+                <p style="font-size:0.8rem; color:#636e72; margin-top:15px;">Tarikh Kejayaan: <span id="cert-p-date">20/07/2026</span></p>
             </div>
-          </div>
-          <button type="submit" id="btnSubmit" class="btn-submit">SUBMIT & JANA SIJIL KEHADIRAN</button>
-        </form>
-        <div id="status"></div>
-      </div>
+
+            <div class="control-panel">
+                <button class="btn btn-success" onclick="window.print()">🖨 Cetak Sijil</button>
+                <button class="btn btn-warning" onclick="downloadFakePDF()">📄 Simpan Rekod</button>
+                <button class="btn btn-primary" onclick="restartGame()">🔄 Main Semula</button>
+            </div>
+        </div>
+
     </div>
 
-    <!-- PAGE 3: SENARAI SIJIL -->
-    <div id="pageSenarai" class="page-content">
-      <div class="panel-futuristic">
-        <h3 style="color:var(--neon-blue); margin-top:0; text-align:center; letter-spacing:1px;">REKOD SENARAI FAIL SIJIL GURU</h3>
-        
-        <div class="dash-filters" style="margin-bottom:20px;">
-          <input type="text" id="searchNama" oninput="jalankanPenapisanJadual()" placeholder="🔍 Cari Nama Penuh...">
-          <select id="saizHalaman" onchange="tukarHadHalamanJadual()" style="max-width: 140px;">
-            <option value="10">10 Baris</option>
-            <option value="50">50 Baris</option>
-            <option value="100">100 Baris</option>
-          </select>
+    <!-- MODAL: CARA BERMAIN -->
+    <div class="modal-overlay" id="modal-howto">
+        <div class="modal-content">
+            <h3 style="color: var(--warning); margin-bottom: 15px; text-align: center;">🛸 CARA BERMAIN</h3>
+            <p style="margin-bottom: 10px; line-height: 1.5;">1. Isi nama dan sekolah anda, pilih avatar kegemaran anda.</p>
+            <p style="margin-bottom: 10px; line-height: 1.5;">2. Terdapat 3 Tahap Pengembaraan. Setiap tahap mempunyai 10 soalan matematik.</p>
+            <p style="margin-bottom: 10px; line-height: 1.5;">3. Jawab dalam tempoh 20 saat bagi setiap soalan. Pilih jawapan yang paling tepat.</p>
+            <p style="margin-bottom: 10px; line-height: 1.5;">4. Jika betul, anda mendapat 10 markah. Jika salah atau masa habis, 1 nyawa akan berkurang.</p>
+            <p style="margin-bottom: 15px; line-height: 1.5;">5. Selamatkan galaksi dan dapatkan Lencana Emas serta Sijil Digital anda!</p>
+            <button class="btn btn-danger btn-block" onclick="closeHowToPlay()">TUTUP ARAHAN</button>
         </div>
-
-        <div id="loadingSenarai" style="text-align: center; color: #64748b; padding: 20px;">Menarik data awan...</div>
-        
-        <div class="table-responsive">
-          <table id="tabelSijil" style="display: none;">
-            <thead>
-              <tr>
-                <th>NO. SIJIL</th>
-                <th>NAMA PENUH</th>
-                <th>NAMA INSTITUSI / SEKOLAH</th>
-                <th>PENYERTAAN SEBAGAI</th>
-                <th>TINDAKAN</th>
-              </tr>
-            </thead>
-            <tbody id="badanTabelSijil"></tbody>
-          </table>
-        </div>
-
-        <div class="pagination-controls">
-          <button id="btnBack" class="btn-page" onclick="pageKeBelakang()">&laquo; Back</button>
-          <span id="indikatorPage" style="font-size: 13px; color:#94a3b8; font-weight: 600;">Halaman 1 dari 1</span>
-          <button id="btnForward" class="btn-page" onclick="pageKeHadapan()">Next &raquo;</button>
-        </div>
-      </div>
     </div>
 
-  </div>
 
-  <!-- TULISAN HAK CIPTA DI BAHAGIAN BAWAH SEBELAH KIRI -->
-  <div class="footer-copyright">
-    Hak Cipta USTP PPDHS
-  </div>
+    <!-- ================= JAVASCRIPT LOGIK PERMAINAN ================= -->
+    <script>
+        // --- KEADAAN PERMAINAN (STATE) ---
+        let player = {
+            name: "Ali",
+            school: "SK Angkasa",
+            avatar: "👨‍🚀",
+            score: 0,
+            lives: 3,
+            currentLevel: 1,
+            currentQuestionIndex: 0,
+            totalQuestionsPerLevel: 10,
+            correctCount: 0,
+            wrongCount: 0,
+            totalTimeSpent: 0
+        };
 
-  <script>
-    var globalData = [];
-    var dataTapisDash = [];
-    var dataTapisJadual = [];
-    
-    var pageAktif = 1;
-    var barisLimit = 10;
-    
-    var instanceChartTahun = null;
-    var instanceChartSektor = null;
+        let isMuted = false;
+        let questionTimerInterval;
+        let gameClockInterval;
+        let questionTimeLeft = 20;
+        let currentCorrectAnswer = 0;
+        let gameActive = false;
 
-    window.onload = function() {
-      muatDashboardAwan('pageDashboard', document.getElementsByClassName('btn-nav')[0]);
-    };
+        // --- SISTEM AUDIO SINTESIS (Tanpa Fail Luaran) ---
+        // Menggunakan Web Audio API untuk menghasilkan kesan bunyi elektronik angkasa lepas secara dinamik
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    function tukarPage(pageId, btnElemen) {
-      var kumpPage = document.getElementsByClassName("page-content");
-      for (var i = 0; i < kumpPage.length; i++) { kumpPage[i].classList.remove("active"); }
-      var kumpBtn = document.getElementsByClassName("btn-nav");
-      for (var j = 0; j < kumpBtn.length; j++) { kumpBtn[j].classList.remove("active"); }
-      document.getElementById(pageId).classList.add("active");
-      btnElemen.classList.add("active");
-    }
-
-    function muatDashboardAwan(pageId, btnElemen) {
-      document.getElementById("loadingDash").style.display = "block";
-      document.getElementById("chartsArea").style.display = "none";
-      tukarPage(pageId, btnElemen);
-      
-      google.script.run
-        .withSuccessHandler(function(dataSheet) {
-          globalData = dataSheet;
-          document.getElementById("loadingDash").style.display = "none";
-          prosesAnalisisVisual();
-        })
-        .withFailureHandler(function() {
-          document.getElementById("loadingDash").innerText = "Gagal memuat sistem dashboard.";
-        })
-        .dapatkanSenaraiKehadiran();
-    }
-
-    function prosesAnalisisVisual() {
-      var fTah = document.getElementById("dashFilTahun").value;
-      var fJen = document.getElementById("dashFilJenis").value;
-      
-      dataTapisDash = globalData.filter(function(row) {
-        return (fTah === "" ? true : row.tahun === fTah) &&
-               (fJen === "" ? true : row.penyertaan === fJen);
-      });
-      
-      document.getElementById("cardTotal").innerText = dataTapisDash.length;
-      document.getElementById("cardPeserta").innerText = dataTapisDash.filter(r => r.penyertaan === "PESERTA").length;
-      document.getElementById("cardPenceramah").innerText = dataTapisDash.filter(r => r.penyertaan === "PENCERAMAH").length;
-      
-      var kvTahun = {};
-      var kvSektor = {};
-      
-      dataTapisDash.forEach(function(row) {
-        if(row.tahun) kvTahun[row.tahun] = (kvTahun[row.tahun] || 0) + 1;
-        if(row.anjuran) kvSektor[row.anjuran] = (kvSektor[row.anjuran] || 0) + 1;
-      });
-      
-      renderGrafTahun(Object.keys(kvTahun), Object.values(kvTahun));
-      renderGrafSektor(Object.keys(kvSektor), Object.values(kvSektor));
-      
-      document.getElementById("chartsArea").style.display = "grid";
-    }
-
-    function renderGrafTahun(labels, dataValues) {
-      if(instanceChartTahun) instanceChartTahun.destroy();
-      var ctx = document.getElementById('chartTahun').getContext('2d');
-      instanceChartTahun = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Bilangan Sijil',
-            data: dataValues,
-            backgroundColor: 'rgba(0, 240, 255, 0.4)',
-            borderColor: '#00f0ff',
-            borderWidth: 2
-          }]
-        },
-        options: { scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } }
-      });
-    }
-
-    function renderGrafSektor(labels, dataValues) {
-      if(instanceChartSektor) instanceChartSektor.destroy();
-      var ctx = document.getElementById('chartSektor').getContext('2d');
-      instanceChartSektor = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Bilangan Sijil',
-            data: dataValues,
-            backgroundColor: 'rgba(189, 0, 255, 0.4)',
-            borderColor: '#bd00ff',
-            borderWidth: 2
-          }]
-        },
-        options: { indexAxis: 'y', scales: { x: { beginAtZero: true, ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } }
-      });
-    }
-
-    function muatSenaraiSijil(pageId, btnElemen) {
-      tukarPage(pageId, btnElemen);
-      document.getElementById("loadingSenarai").style.display = "block";
-      document.getElementById("tabelSijil").style.display = "none";
-      
-      google.script.run
-        .withSuccessHandler(function(dataSheet) {
-          globalData = dataSheet;
-          dataTapisJadual = dataSheet;
-          document.getElementById("loadingSenarai").style.display = "none";
-          pageAktif = 1;
-          renderJadualVisual();
-        })
-        .withFailureHandler(function() {
-          document.getElementById("loadingSenarai").innerText = "Ralat memuatkan pangkalan data.";
-        })
-        .dapatkanSenaraiKehadiran();
-    }
-
-    function renderJadualVisual() {
-      var susunBody = document.getElementById("badanTabelSijil");
-      susunBody.innerHTML = "";
-      
-      if(dataTapisJadual.length === 0) {
-        susunBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#475569; padding:20px;">Tiada rekod data sepadan ditemui.</td></tr>';
-        document.getElementById("indikatorPage").innerText = "Halaman 0 dari 0";
-        document.getElementById("btnBack").disabled = true;
-        document.getElementById("btnForward").disabled = true;
-        document.getElementById("tabelSijil").style.display = "table";
-        return;
-      }
-      
-      var start = (pageAktif - 1) * barisLimit;
-      var end = start + barisLimit;
-      var dataPotong = dataTapisJadual.slice(start, end);
-      
-      dataPotong.forEach(function(item) {
-        var paparanNoSijil = (item.noSijil && item.noSijil !== "") ? item.noSijil : "Tiada Siri";
-        var paparanInstitusi = item.institusi ? item.institusi : "PPD HULU SELANGOR";
-        var paparanPeranan = item.penyertaan ? item.penyertaan.toUpperCase() : "PESERTA";
-        var butangDeleteHtml = '<button class="btn-delete" onclick="requestPadamRekod(\'' + paparanNoSijil + '\')">Delete</button>';
-        
-        var barisanHtml = '<tr>' +
-                            '<td style="color:var(--neon-blue); font-weight:700;">' + paparanNoSijil + '</td>' +
-                            '<td style="font-weight:600; color:#ffffff;">' + item.nama + '</td>' +
-                            '<td>' + paparanInstitusi + '</td>' +
-                            '<td style="color:var(--neon-purple); font-weight:700;">' + paparanPeranan + '</td>' +
-                            '<td>' + butangDeleteHtml + '</td>' +
-                          '</tr>';
-        susunBody.innerHTML += barisanHtml;
-      });
-      
-      var maxPage = Math.ceil(dataTapisJadual.length / barisLimit);
-      document.getElementById("indikatorPage").innerText = "Halaman " + pageAktif + " dari " + maxPage;
-      document.getElementById("btnBack").disabled = (pageAktif === 1);
-      document.getElementById("btnForward").disabled = (pageAktif === maxPage || maxPage === 0);
-      
-      document.getElementById("tabelSijil").style.display = "table";
-    }
-
-    function requestPadamRekod(noSijil) {
-      if (confirm("Adakah anda pasti untuk memadam rekod siri " + noSijil + "? Tindakan ini akan membuang data daripada Google Sheet.")) {
-        document.getElementById("loadingSenarai").style.display = "block";
-        document.getElementById("loadingSenarai").innerText = "Sedang memadam rekod daripada cloud...";
-        document.getElementById("tabelSijil").style.display = "none";
-        
-        google.script.run
-          .withSuccessHandler(function(statusRespon) {
-            if (statusRespon === "Sukses") {
-              alert("Rekod " + noSijil + " berjaya dipadam!");
-              muatSenaraiSijil('pageSenarai', document.querySelectorAll('.btn-nav')[2]);
-            } else {
-              alert(statusRespon);
-              document.getElementById("loadingSenarai").style.display = "none";
-              document.getElementById("tabelSijil").style.display = "table";
+        function playSound(type) {
+            if (isMuted) return;
+            
+            // Aktifkan AudioContext jika disekat oleh pelayar web
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
             }
-          })
-          .withFailureHandler(function(err) {
-            alert("Gagal memadam: " + err.message);
-            document.getElementById("loadingSenarai").style.display = "none";
-            document.getElementById("tabelSijil").style.display = "table";
-          })
-          .padamRekodKehadiran(noSijil);
-      }
-    }
 
-    function jalankanPenapisanJadual() {
-      var valNama = document.getElementById("searchNama").value.toUpperCase();
-      dataTapisJadual = globalData.filter(function(row) {
-        return row.nama.toUpperCase().indexOf(valNama) > -1;
-      });
-      pageAktif = 1;
-      renderJadualVisual();
-    }
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
 
-    function tukarHadHalamanJadual() {
-      barisLimit = parseInt(document.getElementById("saizHalaman").value);
-      pageAktif = 1;
-      renderJadualVisual();
-    }
+            const now = audioCtx.currentTime;
 
-    function pageKeBelakang() { if(pageAktif > 1) { pageAktif--; renderJadualVisual(); } }
-    function pageKeHadapan() {
-      var maxPage = Math.ceil(dataTapisJadual.length / barisLimit);
-      if(pageAktif < maxPage) { pageAktif++; renderJadualVisual(); }
-    }
+            if (type === 'correct') {
+                // Bunyi bip berkembar menaik
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                gainNode.gain.setValueAtTime(0.3, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'wrong') {
+                // Bunyi dengung menurun
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(70, now + 0.4);
+                gainNode.gain.setValueAtTime(0.4, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'win') {
+                // Melodi kemenangan ringkas
+                osc.type = 'sine';
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, index) => {
+                    const oscN = audioCtx.createOscillator();
+                    const gainN = audioCtx.createGain();
+                    oscN.connect(gainN);
+                    gainN.connect(audioCtx.destination);
+                    oscN.type = 'sine';
+                    oscN.frequency.setValueAtTime(freq, now + index * 0.1);
+                    gainN.gain.setValueAtTime(0.3, now + index * 0.1);
+                    gainN.gain.exponentialRampToValueAtTime(0.01, now + index * 0.1 + 0.2);
+                    oscN.start(now + index * 0.1);
+                    oscN.stop(now + index * 0.1 + 0.2);
+                });
+            } else if (type === 'lose') {
+                // Melodi kekalahan menurun
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.6);
+                gainNode.gain.setValueAtTime(0.4, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                osc.start(now);
+                osc.stop(now + 0.6);
+            } else if (type === 'bg') {
+                // Bunyi ambien angkasa berterusan rendah (Bukan muzik berhak cipta)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(110, now); // Frekuensi asas rendah A2
+                gainNode.gain.setValueAtTime(0.05, now);
+                gainNode.gain.linearRampToValueAtTime(0.05, now + 2);
+                osc.start(now);
+                // Fungsi tiruan untuk mengekalkan gelung jika perlu, namun untuk ringkas kita mulakan bunyi pendek
+                osc.stop(now + 1);
+            }
+        }
 
-    function hantarBorang(e) {
-      e.preventDefault();
-      var btn = document.getElementById("btnSubmit");
-      var statusDiv = document.getElementById("status");
-      
-      btn.disabled = true;
-      statusDiv.style.display = "block";
-      statusDiv.className = "loading";
-      statusDiv.innerText = "Menyimpan Maklumat Kehadiran & Menjana Sijil pdf...";
-      
-      var paketData = {
-        nama: document.getElementById("nama").value,
-        ic: document.getElementById("ic").value,
-        institusi: document.getElementById("institusi").value,
-        program: document.getElementById("program").value,
-        penyertaan: document.getElementById("penyertaan").value,
-        anjuran: document.getElementById("anjuran").value,
-        tarikhMula: document.getElementById("tarikhMula").value,
-        tarikhTamat: document.getElementById("tarikhAkhir").value, // Memetakan id tarikhAkhir ke tarikhTamat backend
-        lokasi: document.getElementById("lokasi").value,
-        emel: document.getElementById("emel").value
-      };
-      
-      google.script.run
-        .withSuccessHandler(function(hasil) {
-          if(hasil.includes("Ralat")) {
-            statusDiv.style.background = "rgba(239, 68, 68, 0.15)";
-            statusDiv.style.color = "#fca5a5";
-            statusDiv.style.border = "1px solid #f87171";
-          } else {
-            statusDiv.className = "success";
-            document.getElementById("attendanceForm").reset();
-          }
-          statusDiv.innerText = hasil;
-          btn.disabled = false;
-        })
-        .withFailureHandler(function(kesalahan) {
-          statusDiv.innerText = "Ralat Terputus: " + kesalahan.message;
-          btn.disabled = false;
-        })
-        .prosesPendaftaran(paketData);
-    }
-  </script>
+        // Pembuka gelung bunyi latar secara berkala semasa permainan aktif
+        setInterval(() => {
+            if (gameActive && !isMuted) {
+                playSound('bg');
+            }
+        }, 1200);
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            document.getElementById('audio-status').innerText = isMuted ? "Tutup" : "Buka";
+        }
+
+        // --- PEMBINA ELEMEN VISUAL ANG KASA ---
+        function initSpaceBackground() {
+            const container = document.getElementById('space-bg');
+            // Bina 60 bintang rawak
+            for (let i = 0; i < 60; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 3 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.top = Math.random() * 100 + 'vh';
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(star);
+            }
+
+            // Bina 3 buah planet hiasan berwarna-warni
+            const colors = ['#e84393', '#0984e3', '#fdcb6e'];
+            for (let i = 0; i < 3; i++) {
+                const planet = document.createElement('div');
+                planet.className = 'planet';
+                const size = Math.random() * 40 + 40;
+                planet.style.width = size + 'px';
+                planet.style.height = size + 'px';
+                planet.style.background = colors[i];
+                planet.style.top = (20 + i * 25) + 'vh';
+                planet.style.left = (10 + i * 30) + 'vw';
+                planet.style.animationDuration = (15 + i * 5) + 's';
+                container.appendChild(planet);
+            }
+        }
+
+        window.onload = function() {
+            initSpaceBackground();
+            updateHighScoresDisplay();
+        };
+
+        // --- SISTEM PENGURUSAN AVATAR & MODAL ---
+        function selectAvatar(emoji, element) {
+            player.avatar = emoji;
+            const options = document.querySelectorAll('.avatar-option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        function showHowToPlay() { document.getElementById('modal-howto').style.display = 'flex'; }
+        function closeHowToPlay() { document.getElementById('modal-howto').style.opacity = 0; setTimeout(()=> { const m = document.getElementById('modal-howto'); m.style.display = 'none'; m.style.opacity = 1; }, 200); }
+        
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // --- PENGURUSAN SKRIN ---
+        function showScreen(screenId) {
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // --- LOGIK PERMAINAN UTAMA ---
+        function startGame() {
+            const nameInput = document.getElementById('input-name').value.trim();
+            const schoolInput = document.getElementById('input-school').value.trim();
+
+            if(nameInput === "" || schoolInput === "") {
+                alert("Sila masukkan nama dan nama sekolah anda terlebih dahulu!");
+                return;
+            }
+
+            player.name = nameInput;
+            player.school = schoolInput;
+            player.score = 0;
+            player.lives = 3;
+            player.currentLevel = 1;
+            player.currentQuestionIndex = 0;
+            player.correctCount = 0;
+            player.wrongCount = 0;
+            player.totalTimeSpent = 0;
+
+            // Kemas kini paparan papan pemuka
+            document.getElementById('dash-avatar').innerText = player.avatar;
+            document.getElementById('dash-name').innerText = player.name;
+            document.getElementById('dash-school').innerText = player.school;
+            
+            gameActive = true;
+            showScreen('screen-game');
+            setupLevel();
+            
+            // Jam Utama Keseluruhan
+            clearInterval(gameClockInterval);
+            gameClockInterval = setInterval(() => {
+                if(gameActive) {
+                    player.totalTimeSpent++;
+                    document.getElementById('dash-time').innerText = player.totalTimeSpent;
+                }
+            }, 1000);
+        }
+
+        function setupLevel() {
+            let titleText = "";
+            if(player.currentLevel === 1) titleText = "TAHAP 1: TAMBAH & TOLAK (NOMBOR HINGGA 20)";
+            else if(player.currentLevel === 2) titleText = "TAHAP 2: TAMBAH, TOLAK & DARAB (NOMBOR HINGGA 50)";
+            else if(player.currentLevel === 3) titleText = "TAHAP 3: PENGIRAAN PINTAR GABUNGAN (NOMBOR HINGGA 100)";
+            
+            document.getElementById('level-title').innerText = titleText;
+            document.getElementById('dash-level').innerText = player.currentLevel;
+            updateDashboard();
+            generateQuestion();
+        }
+
+        function updateDashboard() {
+            document.getElementById('dash-score').innerText = player.score;
+            
+            // Render emoji hati untuk nyawa
+            let heartString = "";
+            for(let i=0; i<3; i++) {
+                heartString += (i < player.lives) ? "❤️" : "🖤";
+            }
+            document.getElementById('dash-lives').innerText = heartString;
+
+            // Bar kemajuan tahap semasa
+            let pct = (player.currentQuestionIndex / player.totalQuestionsPerLevel) * 100;
+            document.getElementById('game-progress').style.width = pct + "%";
+        }
+
+        // --- PENJANA SOALAN MATEMATIK PINTAR TAHUN 2 ---
+        function generateQuestion() {
+            let num1 = 0, num2 = 0, operator = "+";
+            let maxNum = 20;
+
+            // Tentukan parameter mengikut tahap permainan
+            if(player.currentLevel === 1) {
+                maxNum = 20;
+                operator = Math.random() > 0.5 ? "+" : "-";
+                
+                if (operator === "+") {
+                    num1 = Math.floor(Math.random() * 12) + 2; // 2 hingga 13
+                    num2 = Math.floor(Math.random() * 7) + 1;  // 1 hingga 7
+                } else {
+                    num1 = Math.floor(Math.random() * 12) + 8; // 8 hingga 19
+                    num2 = Math.floor(Math.random() * num1) + 1; // Pastikan tiada nombor negatif
+                }
+                currentCorrectAnswer = (operator === "+") ? num1 + num2 : num1 - num2;
+
+            } else if(player.currentLevel === 2) {
+                maxNum = 50;
+                let opRand = Math.random();
+                if(opRand < 0.4) {
+                    operator = "+";
+                    num1 = Math.floor(Math.random() * 25) + 5;
+                    num2 = Math.floor(Math.random() * 20) + 5;
+                    currentCorrectAnswer = num1 + num2;
+                } else if(opRand < 0.8) {
+                    operator = "-";
+                    num1 = Math.floor(Math.random() * 30) + 15;
+                    num2 = Math.floor(Math.random() * (num1 - 2)) + 2;
+                    currentCorrectAnswer = num1 - num2;
+                } else {
+                    operator = "×";
+                    // Sifir mudah bersesuaian dengan Tahun 2 (Sifir 2, 3, 4, 5)
+                    const multipliers = [2, 3, 4, 5];
+                    num2 = multipliers[Math.floor(Math.random() * multipliers.length)];
+                    num1 = Math.floor(Math.random() * 9) + 1; // 1 hingga 9
+                    currentCorrectAnswer = num1 * num2;
+                }
+
+            } else {
+                // Tahap 3: Julat nombor lebih besar & Bahagi Mudah
+                let opRand = Math.random();
+                if(opRand < 0.3) {
+                    operator = "+";
+                    num1 = Math.floor(Math.random() * 50) + 20;
+                    num2 = Math.floor(Math.random() * 30) + 5;
+                    currentCorrectAnswer = num1 + num2;
+                } else if(opRand < 0.6) {
+                    operator = "-";
+                    num1 = Math.floor(Math.random() * 60) + 40;
+                    num2 = Math.floor(Math.random() * 35) + 5;
+                    currentCorrectAnswer = num1 - num2;
+                } else if(opRand < 0.8) {
+                    operator = "×";
+                    num1 = Math.floor(Math.random() * 5) + 5; // 5 hingga 9
+                    num2 = Math.floor(Math.random() * 5) + 2; // 2 hingga 6
+                    currentCorrectAnswer = num1 * num2;
+                } else {
+                    operator = "÷";
+                    // Bina bahagi secara terbalik supaya tiada baki (Sesuai tahap asas)
+                    let pembahagi = Math.floor(Math.random() * 4) + 2; // 2 hingga 5
+                    let hasil = Math.floor(Math.random() * 8) + 2; // 2 hingga 9
+                    num1 = pembahagi * hasil; // Angka besar dibahagi
+                    num2 = pembahagi;
+                    currentCorrectAnswer = hasil;
+                }
+            }
+
+            // Paparkan teks soalan
+            document.getElementById('question-display').innerText = `${num1} ${operator} ${num2} = ?`;
+
+            // Bina 4 pilihan jawapan rawak tanpa duplikasi
+            let optionsSet = new Set();
+            optionsSet.add(currentCorrectAnswer);
+
+            while(optionsSet.size < 4) {
+                let variance = Math.floor(Math.random() * 10) - 5;
+                let fakeAns = currentCorrectAnswer + variance;
+                if(fakeAns >= 0 && fakeAns !== currentCorrectAnswer) {
+                    optionsSet.add(fakeAns);
+                }
+            }
+
+            // Tukar semula set kepada array dan susun secara rawak
+            let optionsArray = Array.from(optionsSet);
+            optionsArray.sort(() => Math.random() - 0.5);
+
+            // Suntik teks jawapan ke dalam struktur butang pilihan
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach((btn, idx) => {
+                btn.innerText = optionsArray[idx];
+                btn.className = "option-btn"; // Set semula warna asal butang
+                btn.disabled = false;
+            });
+
+            // Mulakan kaunter masa soalan (20 saat)
+            startQuestionTimer();
+        }
+
+        function startQuestionTimer() {
+            clearInterval(questionTimerInterval);
+            questionTimeLeft = 20;
+            const timerBar = document.getElementById('question-timer');
+            
+            questionTimerInterval = setInterval(() => {
+                questionTimeLeft -= 0.1;
+                let pct = (questionTimeLeft / 20) * 100;
+                timerBar.style.width = pct + "%";
+
+                if (questionTimeLeft <= 0) {
+                    clearInterval(questionTimerInterval);
+                    // Masa tamat dianggap salah satu jawapan
+                    handleWrongAnswer(true); // Parameter true menandakan masa habis
+                }
+            }, 100);
+        }
+
+        // --- SISTEM PEMERIKSAAN JAWAPAN ---
+        function checkAnswer(selectedBtn, index) {
+            clearInterval(questionTimerInterval);
+            
+            // Kunci semua butang sementara maklumbalas diproses
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.disabled = true);
+
+            let selectedValue = parseInt(selectedBtn.innerText);
+
+            if(selectedValue === currentCorrectAnswer) {
+                // JAWAPAN BETUL
+                selectedBtn.classList.add('correct');
+                playSound('correct');
+                player.score += 10;
+                player.correctCount++;
+                
+                // Pencetus kesan visual kejayaan
+                triggerEffects('confetti');
+
+                setTimeout(() => {
+                    advanceQuestion();
+                }, 800);
+            } else {
+                // JAWAPAN SALAH
+                selectedBtn.classList.add('wrong');
+                playSound('wrong');
+                handleWrongAnswer(false);
+            }
+        }
+
+        function handleWrongAnswer(isTimeOut) {
+            player.lives--;
+            player.wrongCount++;
+            updateDashboard();
+
+            // Paparkan lapisan jawapan betul
+            const feedbackLayer = document.getElementById('feedback-layer');
+            const feedbackMsg = document.getElementById('feedback-msg');
+            
+            if(isTimeOut) {
+                feedbackMsg.innerText = "⏰ MASA HABIS!";
+            } else {
+                feedbackMsg.innerText = "❌ OOPS, JAWAPAN SALAH!";
+            }
+
+            document.getElementById('correct-ans-show').innerText = currentCorrectAnswer;
+            feedbackLayer.classList.add('active');
+
+            // Beri peluang murid melihat jawapan betul selama 2 saat
+            setTimeout(() => {
+                feedbackLayer.classList.remove('active');
+                
+                if(player.lives <= 0) {
+                    endGame(false); // Kalah permainan
+                } else {
+                    advanceQuestion();
+                }
+            }, 2000);
+        }
+
+        function advanceQuestion() {
+            player.currentQuestionIndex++;
+            
+            if(player.currentQuestionIndex >= player.totalQuestionsPerLevel) {
+                // Selesai satu tahap penuh
+                if(player.currentLevel < 3) {
+                    // Maju ke skrin transisi tahap
+                    clearInterval(questionTimerInterval);
+                    document.getElementById('trans-msg').innerText = `Anda berjaya menamatkan semua cabaran di Tahap ${player.currentLevel}!`;
+                    triggerEffects('fireworks');
+                    showScreen('screen-transition');
+                } else {
+                    // Selesai tahap terakhir, tamat dengan kemenangan mutlak
+                    endGame(true);
+                }
+            } else {
+                updateDashboard();
+                generateQuestion();
+            }
+        }
+
+        function nextLevel() {
+            player.currentLevel++;
+            player.currentQuestionIndex = 0;
+            showScreen('screen-game');
+            setupLevel();
+        }
+
+        // --- SISTEM KESIMPULAN PERMAINAN & PENILAIAN ---
+        function endGame(isWin) {
+            gameActive = false;
+            clearInterval(questionTimerInterval);
+            clearInterval(gameClockInterval);
+            
+            const titleElement = document.getElementById('gameover-title');
+            
+            if(isWin) {
+                titleElement.innerText = "🎉 MISI BERJAYA DISAPU BERSIH!";
+                titleElement.style.color = "var(--success)";
+                playSound('win');
+                triggerEffects('fireworks');
+            } else {
+                titleElement.innerText = "💥 ROKET ANDA TERHEMPAS!";
+                titleElement.style.color = "var(--danger)";
+                playSound('lose');
+            }
+
+            // Pengiraan Gred & Pengiraan Lencana Pintar
+            let totalAnswered = player.correctCount + player.wrongCount;
+            let accuracy = totalAnswered > 0 ? (player.correctCount / totalAnswered) * 100 : 0;
+            let grade = "C";
+            let badge = "🥉 Gangsa";
+            let badgeEmoji = "🥉";
+
+            if(accuracy >= 90) { grade = "A+"; badge = "💎 Diamond"; badgeEmoji = "💎"; }
+            else if(accuracy >= 75) { grade = "A"; badge = "🥇 Emas"; badgeEmoji = "🥇"; }
+            else if(accuracy >= 55) { grade = "B"; badge = "🥈 Perak"; badgeEmoji = "🥈"; }
+
+            // Suntik data ke skrin keputusan tamat permainan
+            document.getElementById('res-name').innerText = player.name;
+            document.getElementById('res-school').innerText = player.school;
+            document.getElementById('res-score').innerText = player.score;
+            document.getElementById('res-correct').innerText = player.correctCount;
+            document.getElementById('res-wrong').innerText = player.wrongCount;
+            document.getElementById('res-totaltime').innerText = player.totalTimeSpent + " saat";
+            document.getElementById('res-badge').innerText = badge;
+            document.getElementById('res-grade').innerText = grade;
+
+            // Kemas kini komponen Sijil Digital
+            document.getElementById('cert-p-name').innerText = player.name.toUpperCase();
+            document.getElementById('cert-p-school').innerText = player.school.toUpperCase();
+            document.getElementById('cert-p-score').innerText = player.score;
+            
+            let hariIni = new Date();
+            let tarikhFormat = hariIni.getDate() + '/' + (hariIni.getMonth()+1) + '/' + hariIni.getFullYear();
+            document.getElementById('cert-p-date').innerText = tarikhFormat;
+
+            // Simpan skor tertinggi dalam Local Storage browser
+            saveHighScore(player.name, player.score, badge);
+
+            showScreen('screen-gameover');
+        }
+
+        // --- SISTEM LOCAL STORAGE PAPAN SKOR ---
+        function saveHighScore(name, score, badge) {
+            let scores = JSON.parse(localStorage.getItem('space_math_scores')) || [];
+            scores.push({ name: name, score: score, badge: badge, date: new Date().toLocaleDateString() });
+            
+            // Susun markah paling tinggi di atas sekali
+            scores.sort((a, b) => b.score - a.score);
+            // Simpan top 5 sahaja
+            scores = scores.slice(0, 5);
+            
+            localStorage.setItem('space_math_scores', JSON.stringify(scores));
+            updateHighScoresDisplay();
+        }
+
+        function updateHighScoresDisplay() {
+            let scores = JSON.parse(localStorage.getItem('space_math_scores')) || [];
+            const board = document.getElementById('high-score-board');
+            
+            if(scores.length === 0) {
+                board.innerHTML = "<p style='text-align:center; color:#b2bec3;'>Tiada rekod lagi. Jadilah penjelajah pertama!</p>";
+                return;
+            }
+
+            let html = "";
+            scores.forEach((s, idx) => {
+                html += `<div class="leaderboard-item">
+                    <span>${idx + 1}. 👑 ${s.name} - ${s.badge}</span>
+                    <strong>⭐ ${s.score} Pts</strong>
+                </div>`;
+            });
+            board.innerHTML = html;
+        }
+
+        function downloadFakePDF() {
+            alert("📄 Ciri Muat Turun Data: Rekod prestasi telah selamat disimpan dalam sistem Log Fail Pelayar anda!");
+        }
+
+        function quitGame() {
+            if(confirm("Adakah anda pasti mahu menamatkan pengembaraan ini dan kembali ke menu utama?")) {
+                gameActive = false;
+                clearInterval(questionTimerInterval);
+                clearInterval(gameClockInterval);
+                showScreen('screen-welcome');
+            }
+        }
+
+        function restartGame() {
+            showScreen('screen-welcome');
+        }
+
+        // --- KANVAS EFEK GRAFIK (CONFETTI & BUNGA API) ---
+        const canvas = document.getElementById('canvas-fx');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function triggerEffects(mode) {
+            particles = [];
+            let pCount = mode === 'confetti' ? 80 : 150;
+            
+            for(let i=0; i<pCount; i++) {
+                particles.push({
+                    x: mode === 'confetti' ? Math.random() * canvas.width : canvas.width / 2,
+                    y: mode === 'confetti' ? -20 : canvas.height / 2,
+                    vx: (Math.random() - 0.5) * (mode === 'confetti' ? 8 : 15),
+                    vy: mode === 'confetti' ? Math.random() * 5 + 2 : (Math.random() - 0.5) * 15,
+                    color: `hsl(${Math.random() * 360}, 100%, 60%)`,
+                    size: Math.random() * 6 + 4,
+                    alpha: 1,
+                    mode: mode
+                });
+            }
+            animateFX();
+        }
+
+        function animateFX() {
+            if(particles.length === 0) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for(let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Kemas kini kedudukan zarah grafik
+                p.x += p.vx;
+                p.y += p.vy;
+                
+                if(p.mode === 'confetti') {
+                    p.vy += 0.1; // Graviti jatuh ke bawah
+                    p.alpha -= 0.008;
+                } else {
+                    p.vx *= 0.98;
+                    p.vy *= 0.98;
+                    p.alpha -= 0.015; // Zarah bunga api pudar lebih cepat
+                }
+
+                if(p.alpha <= 0 || p.y > canvas.height) {
+                    particles.splice(i, 1);
+                }
+            }
+            
+            if(particles.length > 0) {
+                requestAnimationFrame(animateFX);
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+    </script>
 </body>
 </html>
