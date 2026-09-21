@@ -1,21 +1,28 @@
-# 🎓 Portal Sijil Digital PPDHS
+# Portal Sijil Digital PPDHS
 
-Sistem Pendaftaran Kehadiran dan Penjanaan Sijil Digital Automatik untuk **Pejabat Pendidikan Daerah Hulu Selangor (PPDHS)** menggunakan Google Apps Script, Google Sheets, dan Google Slides.
+## Fail GitHub
+Upload `index.html` dan `README.md` ke repository GitHub. Jangan upload `Code.gs` ke repository public.
 
-## 🚀 Ciri-Ciri Utama
-- **Pendaftaran Kehadiran Dalam Talian**: Antaramuka moden berfokuskan pengalaman pengguna (UI Tema Gelap / Futuristic).
-- **Pelbagai Peranan**: Sokongan untuk Peserta, Penceramah, dan Fasilitator.
-- **Dashboard Analitik**: Graf visual dinamik bagi jumlah sijil mengikut tahun dan sektor anjuran (menggunakan Chart.js).
-- **Kelulusan Admin & Penjanaan Pukal**: Fungsi semakan dan penghantaran sijil automatik berbentuk PDF terus ke e-mel penerima.
-- **Paparan Logo Dinamik**: Mengendalikan paparan logo secara *server-side* bagi melepasi sekatan firewall domain/rangkaian.
+## Backend Google Apps Script
+1. Gantikan Code.gs lama dengan fail `Code.gs` yang disediakan.
+2. Apps Script > Project Settings > Script Properties, tambah:
+   - `ADMIN_EMAIL` = email admin anda
+   - `ADMIN_PASSWORD` = kata laluan admin baharu
+3. Deploy > New deployment > Web app.
+4. Execute as: Me.
+5. Who has access: Anyone (diperlukan supaya GitHub Pages boleh memanggil API).
+6. Authorize dan salin URL yang berakhir `/exec`.
+7. Dalam `index.html`, cari `PASTE_APPS_SCRIPT_WEB_APP_URL_HERE` dan gantikan dengan URL `/exec` tadi.
 
-## 📁 Struktur Projek
-- `Code.gs` - Logik pelayan (Server-side Apps Script: DriveApp, SlidesApp, MailApp, SpreadsheetApp).
-- `Index.html` - Antaramuka Utama (Client-side HTML, CSS, JavaScript, Chart.js).
-- `Logo.html` - Komponen header khas untuk paparan logo PPDHS / KPM.
+## GitHub Pages
+1. Cipta repository baharu.
+2. Upload `index.html` dan `README.md`.
+3. Settings > Pages.
+4. Source: Deploy from a branch.
+5. Branch: `main`, folder `/ (root)`.
+6. Save dan tunggu GitHub Pages diterbitkan.
 
-## 🛠️ Cara Penggunaan
-1. Buka [Google Apps Script](https://script.google.com/).
-2. Salin kod daripada `Code.gs`, `Index.html`, dan `Logo.html`.
-3. Pastikan `SPREADSHEET_ID` di dalam `Code.gs` dihalakan ke Google Sheet yang betul.
-4. Lakukan *Deploy > New deployment > Web app*.
+## Nota keselamatan
+- Jangan letak kata laluan admin di `index.html` atau repository GitHub.
+- Backend menggunakan Script Properties untuk semakan admin.
+- Fungsi padam memerlukan ID dan kata laluan admin.
