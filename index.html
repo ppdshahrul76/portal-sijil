@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -33,7 +32,7 @@
 
     .header-portal {
       text-align: center;
-      padding: 20px 20px 25px 20px;
+      padding: 25px 20px 25px 20px;
       background: rgba(6, 8, 20, 0.9);
       border-bottom: 2px solid var(--neon-blue);
       box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
@@ -225,7 +224,14 @@
 
   <!-- HEADER PORTAL DENGAN PANGGILAN LOGO AUTOMATIK -->
   <div class="header-portal">
-    <?!= HtmlService.createHtmlOutputFromFile('Logo').getContent(); ?>
+<!-- HEADER PORTAL SIJIL DIGITAL (TEMA GELAP) -->
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;width:100%;margin:0 auto;padding-top:25px;padding-bottom:20px;">
+  <div style="display:flex;justify-content:center;align-items:center;width:100%;margin-bottom:12px;">
+    <img src="https://lh3.googleusercontent.com/d/1N2DEP33sbNM5_ajD_b4Lk6WXOz4yHf06" alt="Logo PPD Hulu Selangor" style="height:85px;width:auto;object-fit:contain;margin:0 auto;display:block;" onerror="this.onerror=null;this.src='https://drive.google.com/thumbnail?id=1N2DEP33sbNM5_ajD_b4Lk6WXOz4yHf06&sz=w1000';">
+  </div>
+  <h1 style="font-size:32px;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(to right,#38bdf8,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0;text-align:center;width:100%;">PORTAL SIJIL DIGITAL</h1>
+  <p style="font-size:13px;color:#94a3b8;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-top:6px;margin-bottom:0;text-align:center;width:100%;">PEJABAT PENDIDIKAN DAERAH HULU SELANGOR</p>
+</div>
     
     <div class="nav-portal">
       <button class="btn-nav active" onclick="muatDashboardAwan('pageDashboard', this)">DASHBOARD</button>
@@ -248,8 +254,7 @@
           <select id="dashFilJenis" onchange="prosesAnalisisVisual()">
             <option value="">-- Semua Jenis Sijil --</option>
             <option value="PESERTA">Sijil Penyertaan</option>
-            <option value="PENCERAMAH">Sijil Penghargaan (Penceramah)</option>
-            <option value="FASILITATOR">Sijil Penghargaan (Fasilitator)</option>
+            <option value="PENCERAMAH">Sijil Penghargaan</option>
           </select>
         </div>
 
@@ -263,7 +268,7 @@
             <div class="val" id="cardPeserta">0</div>
           </div>
           <div class="scorecard" style="border-top: 3px solid var(--neon-purple);">
-            <h4>Penceramah & Fasilitator</h4>
+            <h4>Bilangan Sijil Penghargaan</h4>
             <div class="val" id="cardPenceramah">0</div>
           </div>
         </div>
@@ -431,7 +436,7 @@
         <h3 style="color:var(--neon-blue); margin-top:0; text-align:center; letter-spacing:1px;">REKOD SENARAI FAIL SIJIL GURU</h3>
         
         <div class="dash-filters" style="margin-bottom:20px;">
-          <input type="text" id="searchNama" oninput="jalankanPenapisanJadual()" placeholder="🔍 Cari Nama / No. Sijil / Institusi...">
+          <input type="text" id="searchNama" oninput="jalankanPenapisanJadual()" placeholder="🔍 Cari Nama Penuh...">
           <select id="saizHalaman" onchange="tukarHadHalamanJadual()" style="max-width: 140px;">
             <option value="10">10 Baris</option>
             <option value="50">50 Baris</option>
@@ -490,313 +495,189 @@
   </div>
 
   <script>
+    // GANTI dengan URL deployment Apps Script Web App anda yang berakhir dengan /exec
+    const API_URL = "PASTE_APPS_SCRIPT_WEB_APP_URL_HERE";
+
     var globalData = [];
     var dataTapisDash = [];
     var dataTapisJadual = [];
-    
     var pageAktif = 1;
     var barisLimit = 10;
-    
     var instanceChartTahun = null;
     var instanceChartSektor = null;
 
+    async function apiGet(action, params = {}) {
+      const url = new URL(API_URL);
+      url.searchParams.set('action', action);
+      Object.keys(params).forEach(k => url.searchParams.set(k, params[k]));
+      const res = await fetch(url.toString(), { method: 'GET', redirect: 'follow' });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.message || 'Ralat API');
+      return data.data;
+    }
+
+    async function apiPost(action, payload = {}) {
+      // text/plain mengelakkan CORS preflight pada Apps Script Web App.
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        redirect: 'follow',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action, ...payload })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.message || 'Ralat API');
+      return data.data;
+    }
+
     window.onload = function() {
+      if (API_URL.includes('PASTE_APPS_SCRIPT')) {
+        document.getElementById('loadingDash').innerText = 'Sila tetapkan API_URL Apps Script dalam index.html.';
+        return;
+      }
       muatDashboardAwan('pageDashboard', document.getElementsByClassName('btn-nav')[0]);
     };
 
     function tukarPage(pageId, btnElemen) {
-      var kumpPage = document.getElementsByClassName("page-content");
-      for (var i = 0; i < kumpPage.length; i++) { kumpPage[i].classList.remove("active"); }
-      var kumpBtn = document.getElementsByClassName("btn-nav");
-      for (var j = 0; j < kumpBtn.length; j++) { kumpBtn[j].classList.remove("active"); }
-      document.getElementById(pageId).classList.add("active");
-      btnElemen.classList.add("active");
+      Array.from(document.getElementsByClassName('page-content')).forEach(x => x.classList.remove('active'));
+      Array.from(document.getElementsByClassName('btn-nav')).forEach(x => x.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      if (btnElemen) btnElemen.classList.add('active');
     }
 
-    function muatDashboardAwan(pageId, btnElemen) {
-      document.getElementById("loadingDash").style.display = "block";
-      document.getElementById("chartsArea").style.display = "none";
+    async function muatDashboardAwan(pageId, btnElemen) {
+      document.getElementById('loadingDash').style.display = 'block';
+      document.getElementById('chartsArea').style.display = 'none';
       tukarPage(pageId, btnElemen);
-      
-      google.script.run
-        .withSuccessHandler(function(dataSheet) {
-          globalData = dataSheet;
-          document.getElementById("loadingDash").style.display = "none";
-          prosesAnalisisVisual();
-        })
-        .withFailureHandler(function() {
-          document.getElementById("loadingDash").innerText = "Gagal memuat sistem dashboard.";
-        })
-        .dapatkanSenaraiKehadiran();
+      try {
+        globalData = await apiGet('list');
+        document.getElementById('loadingDash').style.display = 'none';
+        prosesAnalisisVisual();
+      } catch (e) {
+        document.getElementById('loadingDash').innerText = 'Gagal memuat sistem dashboard: ' + e.message;
+      }
     }
 
     function prosesAnalisisVisual() {
-      var fTah = document.getElementById("dashFilTahun").value;
-      var fJen = document.getElementById("dashFilJenis").value;
-      
-      dataTapisDash = globalData.filter(function(row) {
-        return (fTah === "" ? true : row.tahun === fTah) &&
-               (fJen === "" ? true : row.penyertaan === fJen);
+      var fTah = document.getElementById('dashFilTahun').value;
+      var fJen = document.getElementById('dashFilJenis').value;
+      dataTapisDash = globalData.filter(row => (fTah === '' || row.tahun === fTah) && (fJen === '' || row.penyertaan === fJen));
+      document.getElementById('cardTotal').innerText = dataTapisDash.length;
+      document.getElementById('cardPeserta').innerText = dataTapisDash.filter(r => r.penyertaan === 'PESERTA').length;
+      document.getElementById('cardPenceramah').innerText = dataTapisDash.filter(r => r.penyertaan === 'PENCERAMAH' || r.penyertaan === 'FASILITATOR').length;
+      var kvTahun = {}, kvSektor = {};
+      dataTapisDash.forEach(row => {
+        if (row.tahun) kvTahun[row.tahun] = (kvTahun[row.tahun] || 0) + 1;
+        if (row.anjuran) kvSektor[row.anjuran] = (kvSektor[row.anjuran] || 0) + 1;
       });
-      
-      document.getElementById("cardTotal").innerText = dataTapisDash.length;
-      document.getElementById("cardPeserta").innerText = dataTapisDash.filter(r => r.penyertaan === "PESERTA").length;
-      document.getElementById("cardPenceramah").innerText = dataTapisDash.filter(r => r.penyertaan === "PENCERAMAH" || r.penyertaan === "FASILITATOR").length;
-      
-      var kvTahun = {};
-      var kvSektor = {};
-      
-      dataTapisDash.forEach(function(row) {
-        if(row.tahun) kvTahun[row.tahun] = (kvTahun[row.tahun] || 0) + 1;
-        if(row.anjuran) kvSektor[row.anjuran] = (kvSektor[row.anjuran] || 0) + 1;
-      });
-      
       renderGrafTahun(Object.keys(kvTahun), Object.values(kvTahun));
       renderGrafSektor(Object.keys(kvSektor), Object.values(kvSektor));
-      
-      document.getElementById("chartsArea").style.display = "grid";
+      document.getElementById('chartsArea').style.display = 'grid';
     }
 
     function renderGrafTahun(labels, dataValues) {
-      if(instanceChartTahun) instanceChartTahun.destroy();
-      var ctx = document.getElementById('chartTahun').getContext('2d');
-      instanceChartTahun = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Bilangan Sijil',
-            data: dataValues,
-            backgroundColor: 'rgba(0, 240, 255, 0.4)',
-            borderColor: '#00f0ff',
-            borderWidth: 2
-          }]
-        },
-        options: { scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } }
+      if (instanceChartTahun) instanceChartTahun.destroy();
+      instanceChartTahun = new Chart(document.getElementById('chartTahun').getContext('2d'), {
+        type:'bar', data:{labels,datasets:[{label:'Bilangan Sijil',data:dataValues,backgroundColor:'rgba(0,240,255,.4)',borderColor:'#00f0ff',borderWidth:2}]},
+        options:{scales:{y:{beginAtZero:true,ticks:{color:'#94a3b8'}},x:{ticks:{color:'#94a3b8'}}},plugins:{legend:{display:false}}}
       });
     }
 
     function renderGrafSektor(labels, dataValues) {
-      if(instanceChartSektor) instanceChartSektor.destroy();
-      var ctx = document.getElementById('chartSektor').getContext('2d');
-      instanceChartSektor = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Bilangan Sijil',
-            data: dataValues,
-            backgroundColor: 'rgba(189, 0, 255, 0.4)',
-            borderColor: '#bd00ff',
-            borderWidth: 2
-          }]
-        },
-        options: { indexAxis: 'y', scales: { x: { beginAtZero: true, ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } }
+      if (instanceChartSektor) instanceChartSektor.destroy();
+      instanceChartSektor = new Chart(document.getElementById('chartSektor').getContext('2d'), {
+        type:'bar', data:{labels,datasets:[{label:'Bilangan Sijil',data:dataValues,backgroundColor:'rgba(189,0,255,.4)',borderColor:'#bd00ff',borderWidth:2}]},
+        options:{indexAxis:'y',scales:{x:{beginAtZero:true,ticks:{color:'#94a3b8'}},y:{ticks:{color:'#94a3b8'}}},plugins:{legend:{display:false}}}
       });
     }
 
-    function muatSenaraiSijil(pageId, btnElemen) {
+    async function muatSenaraiSijil(pageId, btnElemen) {
       tukarPage(pageId, btnElemen);
-      document.getElementById("loadingSenarai").style.display = "block";
-      document.getElementById("tabelSijil").style.display = "none";
-      
-      google.script.run
-        .withSuccessHandler(function(dataSheet) {
-          globalData = dataSheet;
-          dataTapisJadual = dataSheet;
-          document.getElementById("loadingSenarai").style.display = "none";
-          pageAktif = 1;
-          renderJadualVisual();
-        })
-        .withFailureHandler(function() {
-          document.getElementById("loadingSenarai").innerText = "Ralat memuatkan pangkalan data.";
-        })
-        .dapatkanSenaraiKehadiran();
+      document.getElementById('loadingSenarai').style.display = 'block';
+      document.getElementById('tabelSijil').style.display = 'none';
+      try {
+        globalData = await apiGet('list');
+        dataTapisJadual = globalData;
+        document.getElementById('loadingSenarai').style.display = 'none';
+        pageAktif = 1;
+        renderJadualVisual();
+      } catch(e) {
+        document.getElementById('loadingSenarai').innerText = 'Ralat memuatkan pangkalan data: ' + e.message;
+      }
     }
 
     function jalankanPenapisanJadual() {
-      var carian = document.getElementById("searchNama").value.toLowerCase();
-      dataTapisJadual = globalData.filter(function(item) {
-        return (item.nama && item.nama.toLowerCase().includes(carian)) ||
-               (item.noSijil && item.noSijil.toLowerCase().includes(carian)) ||
-               (item.institusi && item.institusi.toLowerCase().includes(carian));
-      });
-      pageAktif = 1;
-      renderJadualVisual();
+      var carian = document.getElementById('searchNama').value.toLowerCase();
+      dataTapisJadual = globalData.filter(item =>
+        (item.nama && item.nama.toLowerCase().includes(carian)) ||
+        (item.noSijil && item.noSijil.toLowerCase().includes(carian)) ||
+        (item.institusi && item.institusi.toLowerCase().includes(carian)));
+      pageAktif = 1; renderJadualVisual();
     }
+    function tukarHadHalamanJadual(){ barisLimit=parseInt(document.getElementById('saizHalaman').value); pageAktif=1; renderJadualVisual(); }
+    function pageKeBelakang(){ if(pageAktif>1){pageAktif--;renderJadualVisual();} }
+    function pageKeHadapan(){ var maxPage=Math.ceil(dataTapisJadual.length/barisLimit); if(pageAktif<maxPage){pageAktif++;renderJadualVisual();} }
 
-    function tukarHadHalamanJadual() {
-      barisLimit = parseInt(document.getElementById("saizHalaman").value);
-      pageAktif = 1;
-      renderJadualVisual();
-    }
-
-    function pageKeBelakang() {
-      if (pageAktif > 1) {
-        pageAktif--;
-        renderJadualVisual();
-      }
-    }
-
-    function pageKeHadapan() {
-      var maxPage = Math.ceil(dataTapisJadual.length / barisLimit);
-      if (pageAktif < maxPage) {
-        pageAktif++;
-        renderJadualVisual();
-      }
-    }
+    function esc(v){ return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 
     function renderJadualVisual() {
-      var susunBody = document.getElementById("badanTabelSijil");
-      susunBody.innerHTML = "";
-      
-      if(dataTapisJadual.length === 0) {
-        susunBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#475569; padding:20px;">Tiada rekod data sepadan ditemui.</td></tr>';
-        document.getElementById("indikatorPage").innerText = "Halaman 0 dari 0";
-        document.getElementById("btnBack").disabled = true;
-        document.getElementById("btnForward").disabled = true;
-        document.getElementById("tabelSijil").style.display = "table";
-        return;
+      var body=document.getElementById('badanTabelSijil'); body.innerHTML='';
+      if(dataTapisJadual.length===0){
+        body.innerHTML='<tr><td colspan="6" style="text-align:center;color:#475569;padding:20px;">Tiada rekod data sepadan ditemui.</td></tr>';
+        document.getElementById('indikatorPage').innerText='Halaman 0 dari 0';
+        document.getElementById('btnBack').disabled=true; document.getElementById('btnForward').disabled=true;
+        document.getElementById('tabelSijil').style.display='table'; return;
       }
-      
-      var start = (pageAktif - 1) * barisLimit;
-      var end = start + barisLimit;
-      var dataPotong = dataTapisJadual.slice(start, end);
-      
-      dataPotong.forEach(function(item) {
-        var paparanNoSijil = (item.noSijil && item.noSijil !== "") ? item.noSijil : "Tiada Siri";
-        var paparanInstitusi = item.institusi ? item.institusi : "PPD HULU SELANGOR";
-        var paparanPeranan = item.penyertaan ? item.penyertaan.toUpperCase() : "PESERTA";
-        
-        var warnaStatus = item.statusEmel === "DIJANA" ? "var(--neon-green)" : "var(--neon-amber)";
-        var butangDeleteHtml = '<button class="btn-delete" onclick="requestPadamRekod(\'' + paparanNoSijil + '\')">Delete</button>';
-        
-        var barisanHtml = '<tr>' +
-                            '<td style="color:var(--neon-blue); font-weight:700;">' + paparanNoSijil + '</td>' +
-                            '<td style="font-weight:600; color:#ffffff;">' + item.nama + '</td>' +
-                            '<td>' + paparanInstitusi + '</td>' +
-                            '<td style="color:var(--neon-purple); font-weight:700;">' + paparanPeranan + '</td>' +
-                            '<td style="color:' + warnaStatus + '; font-weight:700;">' + item.statusEmel + '</td>' +
-                            '<td>' + butangDeleteHtml + '</td>' +
-                          '</tr>';
-        susunBody.innerHTML += barisanHtml;
+      var start=(pageAktif-1)*barisLimit, dataPotong=dataTapisJadual.slice(start,start+barisLimit);
+      dataPotong.forEach(item=>{
+        var no=item.noSijil||'Tiada Siri', inst=item.institusi||'PPD HULU SELANGOR', peranan=(item.penyertaan||'PESERTA').toUpperCase();
+        var warna=item.statusEmel==='DIJANA'?'var(--neon-green)':'var(--neon-amber)';
+        var tr=document.createElement('tr');
+        tr.innerHTML='<td style="color:var(--neon-blue);font-weight:700;">'+esc(no)+'</td><td style="font-weight:600;color:#fff;">'+esc(item.nama)+'</td><td>'+esc(inst)+'</td><td style="color:var(--neon-purple);font-weight:700;">'+esc(peranan)+'</td><td style="color:'+warna+';font-weight:700;">'+esc(item.statusEmel)+'</td><td></td>';
+        var b=document.createElement('button'); b.className='btn-delete'; b.textContent='Delete'; b.onclick=()=>requestPadamRekod(no); tr.lastElementChild.appendChild(b); body.appendChild(tr);
       });
-      
-      var maxPage = Math.ceil(dataTapisJadual.length / barisLimit);
-      document.getElementById("indikatorPage").innerText = "Halaman " + pageAktif + " dari " + maxPage;
-      document.getElementById("btnBack").disabled = (pageAktif === 1);
-      document.getElementById("btnForward").disabled = (pageAktif === maxPage || maxPage === 0);
-      
-      document.getElementById("tabelSijil").style.display = "table";
+      var maxPage=Math.ceil(dataTapisJadual.length/barisLimit);
+      document.getElementById('indikatorPage').innerText='Halaman '+pageAktif+' dari '+maxPage;
+      document.getElementById('btnBack').disabled=pageAktif===1;
+      document.getElementById('btnForward').disabled=pageAktif===maxPage||maxPage===0;
+      document.getElementById('tabelSijil').style.display='table';
     }
 
-    function hantarBorang(e) {
+    async function hantarBorang(e) {
       e.preventDefault();
-      var btn = document.getElementById("btnSubmit");
-      var statusDiv = document.getElementById("status");
-      
-      btn.disabled = true;
-      statusDiv.style.display = "block";
-      statusDiv.className = "loading";
-      statusDiv.innerHTML = "🔄 <strong>Memproses Penghantaran...</strong><br>Sila tunggu seketika sementara sistem cloud merekod data pendaftaran anda ke Google Sheet.";
-      
-      var paketData = {
-        nama: document.getElementById("nama").value,
-        ic: document.getElementById("ic").value,
-        institusi: document.getElementById("institusi").value,
-        program: document.getElementById("program").value,
-        penyertaan: document.getElementById("penyertaan").value,
-        anjuran: document.getElementById("anjuran").value,
-        tarikhMula: document.getElementById("tarikhMula").value,
-        tarikhTamat: document.getElementById("tarikhAkhir").value, 
-        lokasi: document.getElementById("lokasi").value,
-        emel: document.getElementById("emel").value
-      };
-      
-      google.script.run
-        .withSuccessHandler(function(respon) {
-          if(respon.status === "Ralat" || typeof respon === "string" && respon.includes("Ralat")) {
-            statusDiv.style.background = "rgba(239, 68, 68, 0.15)";
-            statusDiv.style.color = "#fca5a5";
-            statusDiv.style.border = "1px solid #f87171";
-            statusDiv.innerText = typeof respon === "string" ? respon : respon.mesej;
-          } else {
-            statusDiv.className = "success";
-            document.getElementById("attendanceForm").reset();
-            
-            statusDiv.innerHTML = "🎉 <strong>PENDAFTARAN KEHADIRAN BERJAYA!</strong><br>" +
-                                  "Maklumat Anda Disimpan Dengan No. Siri <strong>" + respon.noSijil + "</strong>.<br>" +
-                                  "Sijil anda akan disemak oleh Urusetia terlebih dahulu sebelum dijana dan diemelkan secara pukal.";
-          }
-          btn.disabled = false;
-        })
-        .withFailureHandler(function(kesalahan) {
-          statusDiv.innerText = "Ralat Terputus: " + kesalahan.message;
-          btn.disabled = false;
-        })
-        .prosesPendaftaran(paketData);
+      var btn=document.getElementById('btnSubmit'), st=document.getElementById('status');
+      btn.disabled=true; st.className='loading'; st.style.display='block'; st.innerText='⏳ Memproses maklumat kehadiran...';
+      var dataBorang={nama:nama.value,ic:ic.value,institusi:institusi.value,program:program.value,penyertaan:penyertaan.value,anjuran:anjuran.value,tarikhMula:tarikhMula.value,tarikhAkhir:tarikhAkhir.value,lokasi:lokasi.value,emel:emel.value};
+      try {
+        var res=await apiPost('register',{data:dataBorang});
+        st.className='success'; st.innerHTML='✅ Rekod Kehadiran Berjaya Didaftarkan!<br>No. Sijil: <strong>'+esc(res.noSijil)+'</strong>';
+        document.getElementById('attendanceForm').reset();
+      } catch(err) {
+        st.className='loading'; st.style.borderColor='var(--neon-red)'; st.style.color='#ffa6c9'; st.innerText='❌ Ralat: '+err.message;
+      } finally { btn.disabled=false; }
     }
 
-    function triggerPenghantaranPukalAdmin() {
-      var id = document.getElementById("adminId").value;
-      var pass = document.getElementById("adminPass").value;
-      var statusText = document.getElementById("adminStatusArea");
-      var btn = document.getElementById("btnAdminRelease");
-      
-      if(!id || !pass) {
-        alert("Sila isi ID Admin dan Kata Laluan terlebih dahulu!");
-        return;
-      }
-      
-      btn.disabled = true;
-      statusText.style.display = "block";
-      statusText.style.color = "var(--neon-amber)";
-      statusText.innerText = "⏳ Sedang memproses senarai semakan, menjana fail sijil (PDF), dan menguruskan hantaran pukal... Sila tunggu sebentar.";
-      
-      google.script.run
-        .withSuccessHandler(function(maklumbalas) {
-          if (maklumbalas.includes("Ralat")) {
-            statusText.style.color = "var(--neon-red)";
-            statusText.innerText = maklumbalas;
-          } else {
-            statusText.style.color = "var(--neon-green)";
-            statusText.innerText = maklumbalas;
-            document.getElementById("adminPass").value = "";
-            muatSenaraiSijil('pageSenarai', document.querySelectorAll('.btn-nav')[2]);
-          }
-          btn.disabled = false;
-        })
-        .withFailureHandler(function(error) {
-          statusText.style.color = "var(--neon-red)";
-          statusText.innerText = "Ralat Jaringan: " + error.message;
-          btn.disabled = false;
-        })
-        .hantarEmelPukalAdmin(id, pass);
+    async function triggerPenghantaranPukalAdmin() {
+      var id=document.getElementById('adminId').value, pass=document.getElementById('adminPass').value;
+      var statusText=document.getElementById('adminStatusArea'), btn=document.getElementById('btnAdminRelease');
+      if(!id||!pass){alert('Sila isi ID Admin dan Kata Laluan terlebih dahulu!');return;}
+      btn.disabled=true; statusText.style.display='block'; statusText.style.color='var(--neon-amber)'; statusText.innerText='⏳ Sedang menjana dan menghantar sijil...';
+      try {
+        var msg=await apiPost('bulkSend',{adminId:id,adminPass:pass});
+        statusText.style.color=msg.includes('Ralat')?'var(--neon-red)':'var(--neon-green)'; statusText.innerText=msg;
+        if(!msg.includes('Ralat')){ document.getElementById('adminPass').value=''; await muatSenaraiSijil('pageSenarai',document.querySelectorAll('.btn-nav')[2]); }
+      } catch(e){ statusText.style.color='var(--neon-red)'; statusText.innerText='Ralat Jaringan: '+e.message; }
+      finally{ btn.disabled=false; }
     }
 
-    function requestPadamRekod(noSijil) {
-      if (confirm("Adakah anda pasti untuk memadam rekod siri " + noSijil + "? Tindakan ini akan membuang data daripada Google Sheet.")) {
-        document.getElementById("loadingSenarai").style.display = "block";
-        document.getElementById("tabelSijil").style.display = "none";
-        
-        google.script.run
-          .withSuccessHandler(function(statusRespon) {
-            if (statusRespon === "Berjaya") {
-              alert("Rekod " + noSijil + " berjaya dipadam!");
-              muatSenaraiSijil('pageSenarai', document.querySelectorAll('.btn-nav')[2]);
-            } else {
-              alert(statusRespon);
-              document.getElementById("loadingSenarai").style.display = "none";
-              document.getElementById("tabelSijil").style.display = "table";
-            }
-          })
-          .withFailureHandler(function(e) {
-            alert("Ralat memadam rekod: " + e.message);
-            document.getElementById("loadingSenarai").style.display = "none";
-            document.getElementById("tabelSijil").style.display = "table";
-          })
-          .padamRekodPangkalanData(noSijil);
-      }
+    async function requestPadamRekod(noSijil) {
+      var id=document.getElementById('adminId').value, pass=document.getElementById('adminPass').value;
+      if(!id||!pass){ alert('Untuk memadam rekod, isi ID Admin dan Kata Laluan di Panel Admin terlebih dahulu.'); return; }
+      if(!confirm('Adakah anda pasti untuk memadam rekod siri '+noSijil+'?')) return;
+      document.getElementById('loadingSenarai').style.display='block'; document.getElementById('tabelSijil').style.display='none';
+      try {
+        var msg=await apiPost('delete',{noSijil,adminId:id,adminPass:pass});
+        alert(msg); await muatSenaraiSijil('pageSenarai',document.querySelectorAll('.btn-nav')[2]);
+      } catch(e){ alert('Ralat memadam rekod: '+e.message); document.getElementById('loadingSenarai').style.display='none'; document.getElementById('tabelSijil').style.display='table'; }
     }
   </script>
 </body>
